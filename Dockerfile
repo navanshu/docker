@@ -1,19 +1,13 @@
-# Use the official Node.js LTS Alpine image as the base image
-FROM node:lts-alpine
+FROM node:lts-slim
 
-WORKDIR /app
+ARG NODE_ENV=production
 
-# Create a non-root user to run the application
-RUN addgroup -S myappgroup && adduser -S myappuser -G myappgroup
+RUN apt-get update -q && apt-get install --no-install-recommends -y -q build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
 
-# Install the required libraries and tools with minimal privileges
-RUN apk --no-cache add --virtual .build-deps build-base python ca-certificates && apk --no-cache add cairo-dev pango-dev jpeg-dev giflib-dev librsvg-dev
-
-# Switch to the non-root user
-USER myappuser
-RUN npm install -g npm && npm install -g pnpm && pnpm install -g bcrypt express yjs nodemon utf-8-validate
+RUN npm i npm@latest -g
 
 USER node
-RUN rm -rf /var/cache/apk/* && apk del .build-deps
+RUN npm i -g canvas express yjs sharp
 
-USER myappuser
+USER root
+RUN apt-get purge -y --auto-remove
